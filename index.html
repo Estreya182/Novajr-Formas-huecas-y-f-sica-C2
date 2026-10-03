@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario Interactivo: Clase 2 - NovaCoders</title>
+    <!-- Librería para el efecto de confeti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --success: #10B981;
+            --success-bg: #D1FAE5;
+            --danger: #EF4444;
+            --danger-bg: #FEE2E2;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #4B5563;
+        }
+
+        body {
+            font-family: 'Google Sans', sans-serif;
+            background-color: #9bbde0;
+            background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234F46E5' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3Cpath d='M25 15l-5 5 5 5-1.41 1.41L17.17 20l6.42-6.41L25 15zm10 0l5 5-5 5 1.41 1.41L42.83 20l-6.42-6.41L35 15zM55 55l-5 5 5 5-1.41 1.41L47.17 60l6.42-6.41L55 55zm10 0l5 5-5 5 1.41 1.41L72.83 60l-6.42-6.41L65 55z'/%3E%3Ccircle cx='40' cy='40' r='3'/%3E%3Ccircle cx='10' cy='60' r='2'/%3E%3Ccircle cx='70' cy='20' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .brand-logo {
+            font-size: 3rem;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        .brand-name {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.8rem;
+            margin: 0;
+            display: inline-block;
+            vertical-align: middle;
+            letter-spacing: 2px;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 650px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(79, 70, 229, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: #E5E7EB;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 500;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: #F9FAFB;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--text-main);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #F3F4F6;
+            border-color: #D1D5DB;
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.9;
+        }
+
+        .option-btn.correct {
+            background-color: var(--success-bg);
+            border-color: var(--success);
+            color: #065F46;
+            font-weight: 500;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--danger-bg);
+            border-color: var(--danger);
+            color: #991B1B;
+            animation: shake 0.4s;
+        }
+
+        .next-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 30px;
+            transition: background 0.2s;
+            display: none;
+        }
+
+        .next-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .result-screen {
+            display: none;
+            text-align: left;
+        }
+
+        .result-header {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 25px;
+            color: #1F2937;
+        }
+
+        .feedback-section {
+            margin-bottom: 25px;
+        }
+
+        .feedback-section h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #111827;
+        }
+
+        .feedback-section ul {
+            padding-left: 20px;
+            margin: 0;
+            color: #374151;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .feedback-section li {
+            margin-bottom: 12px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #E5E7EB;
+            margin: 30px 0;
+        }
+
+        .learning-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .learning-card {
+            background-color: #F3F4F6;
+            padding: 20px;
+            border-radius: 16px;
+        }
+
+        .learning-card h4 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .learning-card .subtitle {
+            font-size: 0.8rem;
+            color: #6B7280;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .learning-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #1F2937;
+            line-height: 1.4;
+        }
+
+        .bottom-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .bottom-actions a {
+            color: #4B5563;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .retry-btn {
+            background-color: #93C5FD;
+            color: #1E3A8A;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .retry-btn:hover {
+            background-color: #BFDBFE;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 500px) {
+            .learning-cards {
+                grid-template-columns: 1fr;
+            }
+            .brand-name {
+                font-size: 2.2rem;
+            }
+            .brand-logo {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="brand-header">
+    <span class="brand-logo">🚀</span>
+    <h1 class="brand-name">NovaCoders</h1>
+</div>
+
+<div class="quiz-container">
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    
+    <div class="content">
+        <!-- Pantalla de Preguntas -->
+        <div id="quiz-screen" class="fade-in">
+            <div class="header">
+                <span class="question-number" id="question-tracker">Pregunta 1 de 5</span>
+            </div>
+            <h2 class="question-text" id="question-text">Texto de la pregunta</h2>
+            <div class="options-container" id="options-container">
+                <!-- Los botones se inyectan aquí -->
+            </div>
+            <button class="next-btn" id="next-btn" onclick="siguientePregunta()">Siguiente Pregunta</button>
+        </div>
+
+        <!-- Pantalla de Resultados -->
+        <div id="result-screen" class="result-screen">
+            <h1 class="result-header" id="main-greeting">¡Gran progreso! Sigue así.</h1>
+
+            <div class="feedback-section">
+                <h3>Fortalezas</h3>
+                <ul id="strengths-list">
+                    <!-- Se llena con JS -->
+                </ul>
+            </div>
+
+            <div class="feedback-section">
+                <h3>Aspectos a mejorar</h3>
+                <ul id="improvements-list">
+                    <!-- Se llena con JS -->
+                </ul>
+            </div>
+
+            <hr>
+
+            <div class="feedback-section">
+                <h3>Seguir aprendiendo</h3>
+                <div class="learning-cards">
+                    <div class="learning-card">
+                        <h4>Revisar</h4>
+                        <span class="subtitle">Tarjetas didácticas</span>
+                        <p>Crea un conjunto completo de tarjetas didácticas a partir de todo el material de tu cuestionario. Es ideal para repasar y dominar conceptos clave rápidamente.</p>
+                    </div>
+                    <div class="learning-card">
+                        <h4>Aprender</h4>
+                        <span class="subtitle">Guía de estudio</span>
+                        <p>Genera una guía de estudio completa basada en los materiales que estás estudiando. Es una herramienta ideal para repasar en profundidad.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-actions">
+                <a href="#">Opiniones</a>
+                <button class="retry-btn" onclick="reiniciarQuiz()">Responder otro cuestionario</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const preguntas = [
+        {
+            pregunta: "¿Para qué nos sirve activar la casilla de ajuste de cuadrícula (Move / 1 studs) en la pestaña Modelo?",
+            opciones: [
+                "Para cambiar la textura y el color de las piezas automáticamente.",
+                "Para mover los bloques con medidas y saltos exactos, evitando que queden chuecos o desalineados.",
+                "Para hacer que las piezas caigan más rápido por la gravedad.",
+                "Para duplicar las piezas infinitamente en el juego."
+            ],
+            correcta: 1 
+        },
+        {
+            pregunta: "¿Qué sucede con una pieza cuando le aplicamos la herramienta 'Sustraer' (Negate)?",
+            opciones: [
+                "Se elimina del juego para siempre.",
+                "Se vuelve de color oro y comienza a brillar.",
+                "Se convierte en una pieza de corte roja semitransparente lista para perforar a otra.",
+                "Se vuelve un objeto interactivo que da monedas al tocarlo."
+            ],
+            correcta: 2
+        },
+        {
+            pregunta: "Para crear un arco o puerta hueca en una pared, ¿cuál es la secuencia correcta de pasos?",
+            opciones: [
+                "Atravesar la pared con la forma cortadora, aplicar Sustraer (Negate) al corte, seleccionar ambas piezas y presionar Unir (Union).",
+                "Pintar la pared de color transparente con la herramienta Material.",
+                "Borrar la pared completa y dibujarla con la herramienta de Lápiz.",
+                "Activar CanCollide antes de insertar cualquier pieza en el mapa."
+            ],
+            correcta: 0
+        },
+        {
+            pregunta: "Si queremos diseñar una pared trampa o un pasadizo secreto que el avatar pueda atravesar caminando, ¿qué propiedad debemos modificar?",
+            opciones: [
+                "Subir el valor de Transparencia a 100.",
+                "Desmarcar la casilla 'CanCollide' (valor false) en la ventana Propiedades.",
+                "Desactivar el botón de Anclar (Anchor).",
+                "Cambiar el tamaño de la cuadrícula a 45 grados."
+            ],
+            correcta: 1
+        },
+        {
+            pregunta: "¿Cuál es la diferencia entre las propiedades 'Anchored' y 'CanCollide'?",
+            opciones: [
+                "Son exactamente lo mismo con dos nombres diferentes.",
+                "Anchored sirve para pintar el bloque y CanCollide para hacerlo girar.",
+                "Anchored evita que el bloque se caiga por la gravedad, mientras que CanCollide define si los jugadores pueden chocar con él o atravesarlo.",
+                "CanCollide solo funciona si el juego tiene conexión a internet."
+            ],
+            correcta: 2
+        }
+    ];
+
+    let preguntaActual = 0;
+    let puntaje = 0;
+    let respuestasUsuario = []; 
+
+    const questionText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const nextBtn = document.getElementById("next-btn");
+    const tracker = document.getElementById("question-tracker");
+    const progressBar = document.getElementById("progress-bar");
+    const quizScreen = document.getElementById("quiz-screen");
+    const resultScreen = document.getElementById("result-screen");
+
+    function cargarPregunta() {
+        quizScreen.classList.remove("fade-in");
+        void quizScreen.offsetWidth; 
+        quizScreen.classList.add("fade-in");
+
+        const data = preguntas[preguntaActual];
+        questionText.textContent = data.pregunta;
+        tracker.textContent = `Pregunta ${preguntaActual + 1} de ${preguntas.length}`;
+        nextBtn.style.display = "none";
+        optionsContainer.innerHTML = "";
+
+        const progreso = (preguntaActual / preguntas.length) * 100;
+        progressBar.style.width = `${progreso}%`;
+
+        data.opciones.forEach((opcion, index) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.textContent = opcion;
+            btn.onclick = () => seleccionarOpcion(index, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function seleccionarOpcion(indexSeleccionado, botonSeleccionado) {
+        const data = preguntas[preguntaActual];
+        const botones = optionsContainer.children;
+        const esCorrecta = (indexSeleccionado === data.correcta);
+
+        respuestasUsuario.push(esCorrecta);
+
+        for (let btn of botones) {
+            btn.disabled = true;
+        }
+
+        if (esCorrecta) {
+            botonSeleccionado.classList.add("correct");
+            puntaje++;
+            
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444']
+            });
+        } else {
+            botonSeleccionado.classList.add("incorrect");
+            botones[data.correcta].classList.add("correct");
+        }
+
+        nextBtn.style.display = "block";
+        if (preguntaActual === preguntas.length - 1) {
+            nextBtn.textContent = "Ver Resultados";
+        }
+    }
+
+    function siguientePregunta() {
+        preguntaActual++;
+        if (preguntaActual < preguntas.length) {
+            cargarPregunta();
+        } else {
+            mostrarResultados();
+        }
+    }
+
+    function mostrarResultados() {
+        quizScreen.style.display = "none";
+        resultScreen.style.display = "block";
+        progressBar.style.width = "100%";
+
+        const mainGreeting = document.getElementById("main-greeting");
+        const strengthsList = document.getElementById("strengths-list");
+        const improvementsList = document.getElementById("improvements-list");
+        
+        strengthsList.innerHTML = "";
+        improvementsList.innerHTML = "";
+
+        if (puntaje === preguntas.length) {
+            mainGreeting.textContent = "¡Excelente dominio! Sigue así.";
+            setTimeout(() => confetti({ particleCount: 200, spread: 100 }), 300);
+        } else if (puntaje >= 3) {
+            mainGreeting.textContent = "¡Gran progreso! Sigue así.";
+        } else {
+            mainGreeting.textContent = "Buen intento, vamos a repasar juntos.";
+        }
+
+        if (respuestasUsuario[0]) {
+            strengthsList.innerHTML += `<li><strong>Precisión y cuadrícula (Snap to Grid):</strong> Comprendes perfectamente la importancia de usar medidas exactas en studs para construir con precisión sin dejar piezas chuecas.</li>`;
+        }
+        if (respuestasUsuario[1] && respuestasUsuario[2]) {
+            strengthsList.innerHTML += `<li><strong>Modelado constructivo (CSG):</strong> Dominas la secuencia de recorte para perforar figuras usando Sustraer (Negate) y fusionar con Unir (Union) para crear arcos y túneles.</li>`;
+        }
+        if (respuestasUsuario[3] && respuestasUsuario[4]) {
+            strengthsList.innerHTML += `<li><strong>Físicas y Colisiones (CanCollide vs Anchor):</strong> Tienes clarísima la diferencia entre anclar piezas para evitar su caída y desactivar colisiones para diseñar pasadizos secretos y trampas.</li>`;
+        }
+        
+        if (strengthsList.innerHTML === "") {
+            strengthsList.innerHTML = `<li><strong>Disposición para aprender:</strong> El modelado y las físicas 3D requieren práctica continua; ¡cada prueba te acerca a dominar el motor!</li>`;
+        }
+
+        if (puntaje === preguntas.length) {
+            improvementsList.innerHTML += `<li><strong>Práctica avanzada en el Templo:</strong> Ya dominas toda la teoría. El siguiente reto es construir un laberinto completo que combine puertas huecas circulares y al menos tres muros trampa con CanCollide desactivado.</li>`;
+        } else {
+            if (!respuestasUsuario[0]) {
+                improvementsList.innerHTML += `<li><strong>Revisar la cuadrícula (Snap to Grid):</strong> Recuerda que activar la casilla con 1 stud te permite desplazar bloques con saltos regulares para un alineado impecable.</li>`;
+            }
+            if (!respuestasUsuario[1] || !respuestasUsuario[2]) {
+                improvementsList.innerHTML += `<li><strong>Práctica de modelado sólido (CSG):</strong> Prueba en Studio colocando un bloque normal, atravesándolo con un cilindro y presionando Sustraer en el cilindro antes de Unir.</li>`;
+            }
+            if (!respuestasUsuario[3] || !respuestasUsuario[4]) {
+                improvementsList.innerHTML += `<li><strong>Propiedades de impacto:</strong> Recuerda que Anchor controla la caída por gravedad, mientras que CanCollide decide si tu jugador choca o atraviesa la pieza.</li>`;
+            }
+        }
+    }
+
+    function reiniciarQuiz() {
+        preguntaActual = 0;
+        puntaje = 0;
+        respuestasUsuario = [];
+        quizScreen.style.display = "block";
+        resultScreen.style.display = "none";
+        nextBtn.textContent = "Siguiente Pregunta";
+        cargarPregunta();
+    }
+
+    cargarPregunta();
+</script>
+
+</body>
+</html>
